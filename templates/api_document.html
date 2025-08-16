@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typecho 博客 API 文档</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .endpoint {
+            background: #f9f9f9;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            margin-right: 8px;
+        }
+
+        .method-get {
+            background: #e1f0fa;
+            color: #2980b9;
+        }
+
+        .method-post {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .method-put {
+            background: #fff8e1;
+            color: #e65100;
+        }
+
+        .method-delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .endpoint-url {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 8px 0;
+            word-break: break-all;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        th {
+            background: #f2f2f2;
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover td {
+            background: #f9f9f9;
+        }
+
+        .param-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .param-required {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .code-comment {
+            color: #a0aec0;
+        }
+
+        .note {
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+            padding: 10px 15px;
+            border-radius: 0 4px 4px 0;
+            margin: 10px 0;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .endpoint {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>博客 API 接口文档</h1>
+        <p class="subtitle">基于 Flask 实现的 RESTful API，提供博客内容管理功能</p>
+    </header>
+
+    <div class="section">
+        <h2 class="section-title">认证方式</h2>
+        <div class="endpoint">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                <span class="method" style="background: #e0e0e0; color: #333; margin-right: 5px;">Header</span>
+                <strong>X-API-Auth</strong>
+            </div>
+            <p>值为 Base64 编码的 "用户名:密码"，例如：</p>
+            <div class="code-block">
+X-API-Auth: RGVsTGV2aW46emhhb3lhbmcwOTAy
+            </div>
+            <p class="note">
+                示例中，<code style="background:#ddd; padding:2px 5px;">RGVsTGV2aW46emhhb3lhbmcwOTAy</code> 是 "DelLevin:zhaoyang0902" 的 Base64 编码
+            </p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">基础信息</h2>
+        <p><strong>基础 URL:</strong> <code style="background:#f5f5f5; padding:2px 5px;">http://127.0.0.1:5000/api</code></p>
+        <p><strong>接口格式:</strong> JSON</p>
+        <p><strong>默认分页:</strong> page=1, per_page=10</p>
+
+        <div class="note" style="margin-top: 15px; background: #fff8e1; border-color: #ffc107;">
+            <strong>重要提示:</strong>
+            <ul style="padding-left: 20px; margin-top: 5px;">
+                <li style="margin-bottom: 5px;">所有时间戳使用 Unix 时间戳格式（秒级）</li>
+                <li style="margin-bottom: 5px;">分类和标签 ID 需要提前获取</li>
+                <li style="margin-bottom: 5px;">删除操作不可逆，请谨慎操作</li>
+                <li>批量操作时，ID 列表最大支持 50 个</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">文章接口</h2>
+
+        <div class="endpoint">
+            <span class="method method-get">GET</span>
+            <h3>分页获取文章列表</h3>
+            <div class="endpoint-url">/posts?page=2&per_page=10</div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>必填</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                        <th>默认值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">page<span class="param-required">*</span></td>
+                        <td>是</td>
+                        <td>整数</td>
+                        <td>页码</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td class="param-name">per_page</td>
+                        <td>否</td>
+                        <td>整数</td>
+                        <td>每页数量</td>
+                        <td>10</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="note">
+                示例: 获取第 2 页，每页 10 条数据 → <code style="background:#ddd;">/posts?page=2&per_page=10</code>
+            </p>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-get">GET</span>
+            <h3>获取单篇文章</h3>
+            <div class="endpoint-url">/posts/<cid></div>
+            <p>根据文章 ID 获取单篇文章的详细信息</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>必填</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">cid<span class="param-required">*</span></td>
+                        <td>是</td>
+                        <td>整数</td>
+                        <td>文章 ID</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="note">
+                示例: 获取 ID 为 402 的文章 → <code style="background:#ddd;">/posts/402</code>
+            </p>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-post">POST</span>
+            <h3>新增文章</h3>
+            <div class="endpoint-url">/posts</div>
+
+            <div class="code-block">
+{<br>
+  &nbsp;&nbsp;"title": "<span class="code-string">我的新文章</span>",       <span class="code-comment">// 文章标题 (必填)</span><br>
+  &nbsp;&nbsp;"text": "<span class="code-string">这是文章的正文内容。\n\n支持换行。</span>", <span class="code-comment">// 文章内容 (必填)</span><br>
+  &nbsp;&nbsp;"slug": "<span class="code-string">my-new-article</span>",   <span class="code-comment">// 自定义缩略名 (可选)</span><br>
+  &nbsp;&nbsp;"category": [<span class="code-number">17</span>,<span class="code-number">18</span>],       <span class="code-comment">// 分类ID数组 (可选)</span><br>
+  &nbsp;&nbsp;"tags": [<span class="code-number">39</span>,<span class="code-number">40</span>],           <span class="code-comment">// 标签ID数组 (可选)</span><br>
+  &nbsp;&nbsp;"status": "<span class="code-string">publish</span>",      <span class="code-comment">// 状态: publish/draft/hidden (默认 publish)</span><br>
+  &nbsp;&nbsp;"author_id": <span class="code-number">1</span>,            <span class="code-comment">// 作者ID (默认当前用户)</span><br>
+  &nbsp;&nbsp;"created": <span class="code-number">1754000000</span>,     <span class="code-comment">// 创建时间戳 (可选)</span><br>
+  &nbsp;&nbsp;"password": "<span class="code-string"></span>"             <span class="code-comment">// 文章密码 (可选)</span><br>
+}
+            </div>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-delete">DELETE</span>
+            <h3>删除文章</h3>
+            <div class="endpoint-url">/posts/<cid></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>必填</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">cid<span class="param-required">*</span></td>
+                        <td>是</td>
+                        <td>整数</td>
+                        <td>文章 ID</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="note" style="background: #ffebee; border-color: #f44336; color: #b71c1c;">
+                注意: 删除操作不可逆，请谨慎操作！
+            </p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">分类接口</h2>
+
+        <div class="endpoint">
+            <span class="method method-get">GET</span>
+            <h3>获取所有分类</h3>
+            <div class="endpoint-url">/categories</div>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-get">GET</span>
+            <h3>获取单个分类</h3>
+            <div class="endpoint-url">/categories/<mid></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>必填</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">mid<span class="param-required">*</span></td>
+                        <td>是</td>
+                        <td>整数</td>
+                        <td>分类 ID</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-post">POST</span>
+            <h3>新增分类</h3>
+            <div class="endpoint-url">/categories</div>
+
+            <div class="code-block">
+{<br>
+  &nbsp;&nbsp;"name": "<span class="code-string">新分类名称</span>",        <span class="code-comment">// 分类名称 (必填)</span><br>
+  &nbsp;&nbsp;"slug": "<span class="code-string">xin-fen-lei</span>",     <span class="code-comment">// 自定义缩略名 (可选)</span><br>
+  &nbsp;&nbsp;"description": "<span class="code-string">分类描述</span>",   <span class="code-comment">// 分类描述 (可选)</span><br>
+  &nbsp;&nbsp;"parent": <span class="code-number">0</span>                <span class="code-comment">// 父分类ID (0表示顶级分类)</span><br>
+}
+            </div>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-put">PUT</span>
+            <h3>更新分类</h3>
+            <div class="endpoint-url">/categories/<mid></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>必填</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">mid<span class="param-required">*</span></td>
+                        <td>是</td>
+                        <td>整数</td>
+                        <td>分类 ID</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="code-block">
+{<br>
+  &nbsp;&nbsp;"name": "<span class="code-string">更新后的名称</span>",        <span class="code-comment">// 新分类名称</span><br>
+  &nbsp;&nbsp;"slug": "<span class="code-string">geng-xin-hou-de-slug</span>", <span class="code-comment">// 新缩略名</span><br>
+  &nbsp;&nbsp;"description": "<span class="code-string">新的描述</span>",      <span class="code-comment">// 新描述</span><br>
+  &nbsp;&nbsp;"parent": <span class="code-number">0</span>                   <span class="code-comment">// 新父分类ID</span><br>
+}
+            </div>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-delete">DELETE</span>
+            <h3>删除分类</h3>
+            <div class="endpoint-url">/categories/<mid></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>必填</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">mid<span class="param-required">*</span></td>
+                        <td>是</td>
+                        <td>整数</td>
+                        <td>分类 ID</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="note" style="background: #ffebee; border-color: #f44336; color: #b71c1c;">
+                注意: 删除分类会将该分类下的文章移动到默认分类！
+            </p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">标签接口</h2>
+
+        <div class="endpoint">
+            <span class="method method-get">GET</span>
+            <h3>获取所有标签</h3>
+            <div class="endpoint-url">/tags</div>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-get">GET</span>
+            <h3>获取单个标签</h3>
+            <div class="endpoint-url">/tags/<mid></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>必填</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">mid<span class="param-required">*</span></td>
+                        <td>是</td>
+                        <td>整数</td>
+                        <td>标签 ID</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-post">POST</span>
+            <h3>新增标签</h3>
+            <div class="endpoint-url">/tags</div>
+
+            <div class="code-block">
+{<br>
+  &nbsp;&nbsp;"name": "<span class="code-string">新标签名称</span>",       <span class="code-comment">// 标签名称 (必填)</span><br>
+  &nbsp;&nbsp;"slug": "<span class="code-string">xin-biao-qian</span>"   <span class="code-comment">// 自定义缩略名 (可选)</span><br>
+}
+            </div>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-put">PUT</span>
+            <h3>更新标签</h3>
+            <div class="endpoint-url">/tags/<mid></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>必填</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">mid<span class="param-required">*</span></td>
+                        <td>是</td>
+                        <td>整数</td>
+                        <td>标签 ID</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="code-block">
+{<br>
+  &nbsp;&nbsp;"name": "<span class="code-string">更新后的名称</span>",        <span class="code-comment">// 新标签名称 (可选)</span><br>
+  &nbsp;&nbsp;"slug": "<span class="code-string">geng-xin-hou-de-slug</span>" <span class="code-comment">// 新缩略名 (可选)</span><br>
+}
+            </div>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-delete">DELETE</span>
+            <h3>删除单个标签</h3>
+            <div class="endpoint-url">/tags/<mid></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>必填</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">mid<span class="param-required">*</span></td>
+                        <td>是</td>
+                        <td>整数</td>
+                        <td>标签 ID</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-delete">DELETE</span>
+            <h3>批量删除标签</h3>
+            <div class="endpoint-url">/tags</div>
+
+            <div class="code-block">
+{<br>
+  &nbsp;&nbsp;"mids": [<span class="code-number">39</span>, <span class="code-number">40</span>]  <span class="code-comment">// 要删除的标签ID数组 (必填)</span><br>
+}
+            </div>
+
+            <p class="note">
+                批量操作最多支持 50 个标签 ID
+            </p>
+        </div>
+
+        <div class="endpoint">
+            <span class="method method-post">POST</span>
+            <h3>刷新标签</h3>
+            <div class="endpoint-url">/tags/refresh</div>
+            <p class="note">
+                此接口用于在数据异常时重建标签索引，通常不需要频繁调用
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2023 Typecho 博客 API 文档 | 基于 Flask 框架构建</p>
+        <p>文档版本: v1.0.0 | 适用于 Typecho 1.2+ 版本</p>
+    </footer>
+</body>
+</html>
